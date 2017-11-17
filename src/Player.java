@@ -9,7 +9,7 @@ public class Player implements Runnable {
 	public boolean timeToPlay = false;
 	public boolean timeToRun = false;
 	public AudioFormat af;
-	public List<BellNote> length;
+	public List<BellNote> newerSong;
 	public Note newNote;
 
 	public final Thread thread;
@@ -24,7 +24,7 @@ public class Player implements Runnable {
 	Player(List<BellNote> list, Note n, AudioFormat a) {
 		thread = new Thread(this, "Musician " + n);
 		this.af = a;
-		this.length = list;
+		this.newerSong = list;
 		this.timeToRun = true;
 		this.newNote = n;
 		thread.start();
@@ -128,7 +128,7 @@ public class Player implements Runnable {
 			line.open();
 			line.start();
 
-			playNote(line, new BellNote(newNote, length.remove(0).length));
+			playNote(line, new BellNote(newNote, newerSong.remove(0).length));
 
 			line.drain();
 		} catch (LineUnavailableException e) {

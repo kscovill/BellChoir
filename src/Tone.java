@@ -94,6 +94,7 @@ public class Tone {
 					}
 				}
 			} catch (IOException ignored) {
+				System.err.println("SOMETHING HAPPENED");
 			}
 		} else {
 			System.err.println("File '" + filename + "' not found");
