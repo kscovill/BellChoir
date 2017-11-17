@@ -15,8 +15,9 @@ public class Player implements Runnable {
 	public final Thread thread;
 
 	/**
-	 * Constructor for each player
-	 * Must be passed the song, their note, and the audioFormat
+	 * Constructor for each player Must be passed the song, their note, and the
+	 * audioFormat
+	 * 
 	 * @param list
 	 * @param n
 	 * @param a
@@ -28,13 +29,13 @@ public class Player implements Runnable {
 		this.timeToRun = true;
 		this.newNote = n;
 		thread.start();
-		//Debug Statement
-		//System.out.println(thread.getName() + " is Running");
+		// Debug Statement
+		// System.out.println(thread.getName() + " is Running");
 	}
 
 	/**
-	 * Attempts to gain access and if its not time to play
-	 * then they wait.
+	 * Attempts to gain access and if its not time to play then they wait.
+	 * 
 	 * @throws InterruptedException
 	 */
 	public synchronized void gainAccess() throws InterruptedException {
@@ -52,11 +53,9 @@ public class Player implements Runnable {
 	}
 
 	/**
-	 * runs when the thread starts
-	 * while it is time to run, it checks if it is time to play
-	 * if it is then it makes sure
-	 * then it plays the song
-	 * then releases their resource
+	 * runs when the thread starts while it is time to run, it checks if it is time
+	 * to play if it is then it makes sure then it plays the song then releases
+	 * their resource
 	 */
 	@Override
 	public void run() {
@@ -119,7 +118,8 @@ public class Player implements Runnable {
 	}
 
 	/**
-	 * Actually will open the line and call playNote for the note for its intended duration
+	 * Actually will open the line and call playNote for the note for its intended
+	 * duration
 	 */
 	public synchronized void nowPlay() {
 		// Debug Statement
@@ -137,8 +137,9 @@ public class Player implements Runnable {
 	}
 
 	/**
-	 * plays the actual note given the line started in the previous method.
-	 * Runs directly in line with nowPlay()
+	 * plays the actual note given the line started in the previous method. Runs
+	 * directly in line with nowPlay()
+	 * 
 	 * @param line
 	 * @param bn
 	 */
