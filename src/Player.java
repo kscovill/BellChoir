@@ -28,7 +28,8 @@ public class Player implements Runnable {
 		this.timeToRun = true;
 		this.newNote = n;
 		thread.start();
-		System.out.println(thread.getName() + " is Running");
+		//Debug Statement
+		//System.out.println(thread.getName() + " is Running");
 	}
 
 	/**
@@ -107,7 +108,7 @@ public class Player implements Runnable {
 	}
 
 	/**
-	 * 
+	 * Wait for the thread to stop
 	 */
 	public void waitToStop() {
 		try {
@@ -117,8 +118,12 @@ public class Player implements Runnable {
 		}
 	}
 
+	/**
+	 * Actually will open the line and call playNote for the note for its intended duration
+	 */
 	public synchronized void nowPlay() {
-		System.out.println(thread.getName() + " is trying to play");
+		// Debug Statement
+		// System.out.println(thread.getName() + " is trying to play");
 		try (final SourceDataLine line = AudioSystem.getSourceDataLine(af)) {
 			line.open();
 			line.start();
@@ -127,11 +132,16 @@ public class Player implements Runnable {
 
 			line.drain();
 		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * plays the actual note given the line started in the previous method.
+	 * Runs directly in line with nowPlay()
+	 * @param line
+	 * @param bn
+	 */
 	public synchronized void playNote(SourceDataLine line, BellNote bn) {
 
 		final int ms = Math.min(bn.length.timeMs(), Note.MEASURE_LENGTH_SEC * 1000);

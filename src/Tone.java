@@ -11,10 +11,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Tone Class
@@ -28,7 +24,6 @@ public class Tone {
 	public static final int TIME_BETWEEN_NOTES = 100;
 	private static boolean success = true;
 	private static Player[] p;
-	private static Thread thread;
 
 	/**
 	 * Main method that is run at startup
@@ -40,53 +35,60 @@ public class Tone {
 	public static void main(String[] args) throws Exception {
 		final AudioFormat af = new AudioFormat(Note.SAMPLE_RATE, 8, 1, true, false);
 		Tone t = new Tone(af);
+		// Load the Song in to the song List
 		loadNotes(args[0]);
+		//Check if it is a real song
 		if (!success) {
 			System.err.println("This is an Invalid Song");
 			System.exit(1);
 		}
-		p = new Player[14]; // note length
+		
+		// Make a thread for each player
+		p = new Player[14];
 		int pi =0;
 		for (Note n : Note.values()) {
 			p[pi] = new Player(song,n,af);
 			pi++;
 		}
-//		Note base = Note.REST;
-//		for (int i = 0; i < 14; i++) {
-//			p[i] = new Player(song, base, af);
-//			System.out.println(base + " is " + i);
-//			if (i < 13) {
-//				base = base.getNext();
-//			}
-//		}
-		System.out.println("TRYING TO PLAY SONG");
+		// Debug Statement
+		//System.out.println("TRYING TO PLAY SONG");
+		// start to play the song
 		t.playSong(song);
-		System.out.println("SONG FINISHED");
+		// Debug Statement
+		//System.out.println("SONG FINISHED");
 
+		// Stop all threads
 		for (int i = 0; i < 14; i++) {
 			p[i].stopRunning();
-			System.out.println("STOPPING " + i);
+			//System.out.println("STOPPING " + i);
 		}
+		// Wait for all threads to finish
 		for (int i = 0; i < 14; i++) {
 			p[i].waitToStop();
-			System.out.println("Joining " + i);
+			//System.out.println("Joining " + i);
 		}
 	}
 
 	private static final List<BellNote> song = new ArrayList<BellNote>();
 
+	/**
+	 * Load Notes from Nate
+	 * slightly altered to not return the song but to just add to the song
+	 * @param filename
+	 */
 	private static void loadNotes(String filename) {
 		final File file = new File(filename);
 		if (file.exists()) {
-			System.out.println("FILES EXISTS!");
+			//System.out.println("FILES EXISTS!");
 			try (FileReader fileReader = new FileReader(file); BufferedReader br = new BufferedReader(fileReader)) {
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					BellNote n = parseNote(line);
 					if (n != null) {
-						System.out.println("ADDING LINE");
+						//System.out.println("ADDING LINE");
 						song.add(n);
 					} else {
+						//If the note was invalid, make sure the program knows to error out
 						System.err.println("Error: Invalid note '" + line + "'");
 						success = false;
 					}
@@ -96,33 +98,45 @@ public class Tone {
 		} else {
 			System.err.println("File '" + filename + "' not found");
 		}
-		// return song;
 	}
 
 	private final AudioFormat af;
 
+	/**
+	 * Tone Constructor
+	 * @param af
+	 */
 	Tone(AudioFormat af) {
 		this.af = af;
 	}
 
+	/**
+	 * PlaySong from Nate
+	 * Altered to tell each member when to play
+	 * @param song
+	 * @throws LineUnavailableException
+	 * @throws InterruptedException
+	 */
 	void playSong(List<BellNote> song) throws LineUnavailableException, InterruptedException {
 		try (final SourceDataLine line = AudioSystem.getSourceDataLine(af)) {
 			line.open();
 			line.start();
 			while (!song.isEmpty()) {
-				doTheThing(song);
+				conductPlayer(song);
 			}
-			// for (BellNote bn : song) {
-			// playNote(line, bn);
-			// }
 			line.drain();
 		}
 	}
 
-	private synchronized void doTheThing(List<BellNote> s) throws InterruptedException {
+	/**
+	 * conducts the correct player to play based on which note is given
+	 * @param s
+	 * @throws InterruptedException
+	 */
+	private synchronized void conductPlayer(List<BellNote> s) throws InterruptedException {
 
 		Note nn = s.get(0).note;
-		System.out.println(s.get(0).note);
+		//System.out.println(s.get(0).note);
 		switch (nn) {
 		case A4:
 			p[1].play();
@@ -167,20 +181,15 @@ public class Tone {
 			p[0].play();
 			break;
 		}
-		// final int ms = Math.min(s.get(0).length.timeMs(), Note.MEASURE_LENGTH_SEC *
-		// 1000);
-		// final int newLength = Note.SAMPLE_RATE * ms / 1000;
-		// Thread.sleep(s.get(0).length.timeMs()+100);
 
 	}
 
-	private synchronized void playNote(SourceDataLine line, BellNote bn) {
-		final int ms = Math.min(bn.length.timeMs(), Note.MEASURE_LENGTH_SEC * 1000);
-		final int length = Note.SAMPLE_RATE * ms / 1000;
-		line.write(bn.note.sample(), 0, length);
-		line.write(Note.REST.sample(), 0, 100);
-	}
-
+	/**
+	 * parses the given text in to BellNotes based on Note and length
+	 * Can also return an invalid note
+	 * @param line
+	 * @return
+	 */
 	private static BellNote parseNote(String line) {
 		String[] fields = line.split("\\s+");
 
@@ -188,7 +197,7 @@ public class Tone {
 
 			Note newNote = null;
 			int newInt = parseInt(fields[1]);
-			System.out.println(fields[0]);
+			//System.out.println(fields[0]);
 
 			switch (fields[0]) {
 
@@ -242,18 +251,18 @@ public class Tone {
 
 				switch (newInt) {
 				case 8:
-					System.out.println(newNote);
+					//System.out.println(newNote);
 					return new BellNote(newNote, NoteLength.EIGHTH);
 				case 4:
-					System.out.println(newNote);
+					//System.out.println(newNote);
 					return new BellNote(newNote, NoteLength.QUARTER);
 				// length = NoteLength.QUARTER;
 				case 2:
-					System.out.println(newNote);
+					//System.out.println(newNote);
 					return new BellNote(newNote, NoteLength.HALF);
 				// length = NoteLength.HALF;
 				case 1:
-					System.out.println(newNote);
+					//System.out.println(newNote);
 					return new BellNote(newNote, NoteLength.WHOLE);
 				// length = NoteLength.WHOLE;
 				default:
@@ -265,6 +274,11 @@ public class Tone {
 		return null;
 	}
 
+	/**
+	 * Generic method to parse the Integer
+	 * @param num
+	 * @return
+	 */
 	private static int parseInt(String num) {
 		try {
 			return Integer.parseInt(num);
@@ -275,6 +289,11 @@ public class Tone {
 
 }
 
+/**
+ * Bell Note Class for each individual Bell Note
+ * @author Kyle
+ *
+ */
 class BellNote {
 	final Note note;
 	final NoteLength length;
@@ -285,6 +304,11 @@ class BellNote {
 	}
 }
 
+/**
+ * NoteLength class for each length of the note
+ * @author Kyle
+ *
+ */
 enum NoteLength {
 	WHOLE(1.0f), HALF(0.5f), QUARTER(0.25f), EIGHTH(0.125f);
 
@@ -299,6 +323,11 @@ enum NoteLength {
 	}
 }
 
+/**
+ * Note Class for the Note of each BellNote
+ * @author Kyle
+ *
+ */
 enum Note {
 	// REST Must be the first 'Note'
 	REST, A4, A4S, B4, C4, C4S, D4, D4S, E4, F4, F4S, G4, G4S, A5;
